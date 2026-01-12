@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaHeart, FaBell, FaEdit, FaTrash, FaCalendarAlt, FaEye } from 'react-icons/fa';
+import { FaHeart, FaBell, FaEdit, FaTrash, FaCalendarAlt, FaEye, FaUpload, FaUserCircle } from 'react-icons/fa';
 
 type VenueCategory = 'hotel-rooms' | 'banquet-halls' | 'outdoor-venues';
 type AppointmentStatus = 'new' | 'accepted' | 'rejected' | 'rescheduled';
@@ -52,6 +52,15 @@ export default function VenueAccommodationDashboard() {
   const [appointmentFilter, setAppointmentFilter] = useState<AppointmentStatus>('new');
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showCalendar, setShowCalendar] = useState<string | null>(null);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [profileData, setProfileData] = useState({
+    businessName: '',
+    description: '',
+    email: '',
+    phone: '',
+    address: '',
+    logo: null as File | null
+  });
   const [newPackage, setNewPackage] = useState({
     title: '',
     pricePerDay: '',
@@ -184,17 +193,38 @@ export default function VenueAccommodationDashboard() {
     setSelectedAppointment(null);
   };
 
+  const handleProfileUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert('Profile details uploaded successfully!');
+    setShowUploadModal(false);
+  };
+
   return (
     <div className="min-h-screen" style={{backgroundColor: '#f8f5ff'}}>
       {/* Header */}
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="text-3xl transition-colors hover:opacity-70"
+              style={{color: '#755A7B'}}
+              title="Upload Profile"
+            >
+              <FaUserCircle />
+            </button>
             <img src="/logo.png" alt="Logo" className="h-12 w-12" />
             <div>
               <h1 className="text-3xl font-bold" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>Cinderella Hotel</h1>
               <p className="text-sm" style={{color: '#755A7B'}}>Venue & Accommodation</p>
             </div>
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="ml-4 px-4 py-2 text-white rounded-md transition-colors hover:opacity-90 flex items-center gap-2"
+              style={{backgroundColor: '#755A7B'}}
+            >
+              <FaUpload /> Upload
+            </button>
           </div>
           <button
             onClick={handleLogout}
@@ -733,6 +763,107 @@ export default function VenueAccommodationDashboard() {
               >
                 Close
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Upload Profile Modal */}
+        {showUploadModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{zIndex: 1000}}>
+            <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <h3 className="text-2xl font-bold mb-6" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>
+                Upload Profile Details
+              </h3>
+              <form onSubmit={handleProfileUpload}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={profileData.businessName}
+                      onChange={(e) => setProfileData({...profileData, businessName: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="e.g., Cinderella Hotel"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea
+                      required
+                      rows={4}
+                      value={profileData.description}
+                      onChange={(e) => setProfileData({...profileData, description: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="Brief description of your business..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      required
+                      value={profileData.email}
+                      onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="contact@cinderellahotel.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      required
+                      value={profileData.phone}
+                      onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="+94 77 123 4567"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                    <input
+                      type="text"
+                      required
+                      value={profileData.address}
+                      onChange={(e) => setProfileData({...profileData, address: e.target.value})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      placeholder="123 Main Street, Colombo"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Logo</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setProfileData({...profileData, logo: e.target.files ? e.target.files[0] : null})}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                    />
+                  </div>
+
+                  <div className="flex gap-4 mt-6">
+                    <button
+                      type="submit"
+                      className="flex-1 px-6 py-3 text-white rounded-md font-medium transition-colors hover:opacity-90"
+                      style={{backgroundColor: '#755A7B'}}
+                    >
+                      Upload Profile
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowUploadModal(false)}
+                      className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-md font-medium transition-colors hover:bg-gray-300"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
         )}

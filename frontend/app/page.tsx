@@ -145,7 +145,7 @@ export default function Home() {
           <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
             Click on any category to access the vendor management dashboard (Dev Mode - No Authentication)
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-4">
             {[
               { name: 'Venue & Accommodation', route: '/dashboard/venue-accommodation' },
               { name: 'Photography & Videography', route: '/dashboard/photography' },
@@ -159,13 +159,15 @@ export default function Home() {
               <Link
                 key={category.name}
                 href={category.route}
-                className="bg-white p-6 rounded-lg shadow text-center hover:shadow-xl transition-all hover:scale-105"
+                className="text-center transition-all transform hover:scale-105 hover:shadow-2xl rounded-xl shadow-lg"
                 style={{
-                  borderTop: '4px solid #755A7B'
+                  backgroundColor: '#755A7B',
+                  padding: '24px 16px',
+                  borderRadius: '12px',
+                  border: '2px solid #5a4463'
                 }}
               >
-                <p className="font-semibold text-gray-900 mb-2">{category.name}</p>
-                <p className="text-xs text-gray-500">Manage →</p>
+                <p className="font-bold text-white text-sm leading-tight">{category.name}</p>
               </Link>
             ))}
           </div>

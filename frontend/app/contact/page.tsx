@@ -113,39 +113,39 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
             {/* Email */}
-            <div className="text-center p-8 rounded-xl shadow-lg bg-white">
-              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{backgroundColor: '#D2C8D3'}}>
-                <FaEnvelope className="text-2xl" style={{color: '#755A7B'}} />
+            <div className="text-center p-8 rounded-xl shadow-lg" style={{backgroundColor: '#755A7B', border: '3px solid white'}}>
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{backgroundColor: 'rgba(255, 255, 255, 0.2)'}}>
+                <FaEnvelope className="text-2xl text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3" style={{fontFamily: 'var(--font-season)'}}>
+              <h3 className="text-xl font-bold text-white mb-3" style={{fontFamily: 'var(--font-season)'}}>
                 Email Us
               </h3>
-              <p className="text-gray-600 mb-2">support@wedora.com</p>
-              <p className="text-gray-600">info@wedora.com</p>
+              <p className="text-white mb-2">support@wedora.com</p>
+              <p className="text-white">info@wedora.com</p>
             </div>
 
             {/* Phone */}
-            <div className="text-center p-8 rounded-xl shadow-lg bg-white">
-              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{backgroundColor: '#E5D4CC'}}>
-                <FaPhone className="text-2xl" style={{color: '#755A7B'}} />
+            <div className="text-center p-8 rounded-xl shadow-lg" style={{backgroundColor: '#755A7B', border: '3px solid white'}}>
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{backgroundColor: 'rgba(255, 255, 255, 0.2)'}}>
+                <FaPhone className="text-2xl text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3" style={{fontFamily: 'var(--font-season)'}}>
+              <h3 className="text-xl font-bold text-white mb-3" style={{fontFamily: 'var(--font-season)'}}>
                 Call Us
               </h3>
-              <p className="text-gray-600 mb-2">+94 77 123 4567</p>
-              <p className="text-gray-600">+94 11 234 5678</p>
+              <p className="text-white mb-2">+94 77 123 4567</p>
+              <p className="text-white">+94 11 234 5678</p>
             </div>
 
             {/* Location */}
-            <div className="text-center p-8 rounded-xl shadow-lg bg-white">
-              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{backgroundColor: '#D2C8D3'}}>
-                <FaMapMarkerAlt className="text-2xl" style={{color: '#755A7B'}} />
+            <div className="text-center p-8 rounded-xl shadow-lg" style={{backgroundColor: '#755A7B', border: '3px solid white'}}>
+              <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{backgroundColor: 'rgba(255, 255, 255, 0.2)'}}>
+                <FaMapMarkerAlt className="text-2xl text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3" style={{fontFamily: 'var(--font-season)'}}>
+              <h3 className="text-xl font-bold text-white mb-3" style={{fontFamily: 'var(--font-season)'}}>
                 Visit Us
               </h3>
-              <p className="text-gray-600 mb-2">123 Wedding Street</p>
-              <p className="text-gray-600">Colombo, Sri Lanka</p>
+              <p className="text-white mb-2">123 Wedding Street</p>
+              <p className="text-white">Colombo, Sri Lanka</p>
             </div>
           </div>
 
