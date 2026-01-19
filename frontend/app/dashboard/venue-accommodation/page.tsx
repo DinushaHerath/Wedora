@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FaHeart, FaBell, FaEdit, FaTrash, FaCalendarAlt, FaEye, FaUpload, FaUserCircle } from 'react-icons/fa';
+import { FaHeart, FaBell, FaEdit, FaTrash, FaCalendarAlt, FaEye, FaUpload, FaUserCircle, FaChartBar, FaMoneyBillWave, FaFileInvoice, FaUndo, FaCog, FaMoon, FaPlus, FaBuilding, FaHotel, FaTree } from 'react-icons/fa';
 
 type VenueCategory = 'hotel-rooms' | 'banquet-halls' | 'outdoor-venues';
-type AppointmentStatus = 'new' | 'accepted' | 'rejected' | 'rescheduled';
 
 interface Package {
   id: string;
@@ -15,25 +14,9 @@ interface Package {
   facilities: string[];
   photos: string[];
   createdAt: Date;
-  blockedDates?: string[];
-  foodBeveragePrice?: number;
-  decorationPrice?: number;
-  guestServiceCharge?: number;
-}
-
-interface Appointment {
-  id: string;
-  customerName: string;
-  email: string;
-  phone: string;
-  requestedDate: string;
-  requestedTime: string;
-  weddingDate: string;
-  packageInterest: string;
-  expectedGuests: string;
-  message: string;
-  status: AppointmentStatus;
-  venueName: string;
+  stock?: number;
+  discount?: string;
+  discountType?: string;
 }
 
 interface VendorUser {
@@ -46,62 +29,44 @@ interface VendorUser {
 export default function VenueAccommodationDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<VendorUser | null>(null);
-  const [activeCategory, setActiveCategory] = useState<VenueCategory>('hotel-rooms');
-  const [showNewPackageForm, setShowNewPackageForm] = useState(false);
   const [packages, setPackages] = useState<Package[]>([]);
-  const [appointmentFilter, setAppointmentFilter] = useState<AppointmentStatus>('new');
-  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const [showCalendar, setShowCalendar] = useState<string | null>(null);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [profileData, setProfileData] = useState({
-    businessName: '',
-    description: '',
-    email: '',
-    phone: '',
-    address: '',
-    logo: null as File | null
-  });
+  const [activeCategory, setActiveCategory] = useState<VenueCategory>('hotel-rooms');
+  const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
+  const [selectedRoomType, setSelectedRoomType] = useState<string>('');
   const [newPackage, setNewPackage] = useState({
     title: '',
     pricePerDay: '',
     facilities: '',
-    foodBeveragePrice: '',
-    decorationPrice: '',
-    guestServiceCharge: '',
+    stock: '',
+    discount: '',
+    discountType: '',
     photos: [] as File[],
   });
 
-  // Mock appointments data
-  const [appointments] = useState<Appointment[]>([
-    {
-      id: '1',
-      customerName: 'John & Diana',
-      email: 'john@email.com',
-      phone: '+94 77 123 4567',
-      requestedDate: 'Jan 15, 2026',
-      requestedTime: '2:00 PM',
-      weddingDate: 'Feb 14, 2026',
-      packageInterest: 'Full Wedding Package - Banquet Hall',
-      expectedGuests: '200-250 people',
-      message: 'We are interested in booking the banquet hall for our wedding. Would love to discuss customization options.',
-      status: 'new',
-      venueName: 'Cinderella Hotel'
-    },
-    {
-      id: '2',
-      customerName: 'Sarah & Mike',
-      email: 'sarah@email.com',
-      phone: '+94 77 987 6543',
-      requestedDate: 'Jan 12, 2026',
-      requestedTime: '10:00 AM',
-      weddingDate: 'March 20, 2026',
-      packageInterest: 'Hotel Rooms Package',
-      expectedGuests: '100-150 people',
-      message: 'Looking for accommodation for wedding guests.',
-      status: 'accepted',
-      venueName: 'Cinderella Hotel'
+  const getCategoryBannerText = () => {
+    switch(activeCategory) {
+      case 'hotel-rooms':
+        return 'Manage Hotel Rooms';
+      case 'banquet-halls':
+        return 'Manage Banquet Hall';
+      case 'outdoor-venues':
+        return 'Manage Outdoor Venue';
+      default:
+        return 'Venue Package Manager';
     }
-  ]);
+  };
+
+  const toggleFacility = (facility: string) => {
+    setSelectedFacilities(prev => 
+      prev.includes(facility) 
+        ? prev.filter(f => f !== facility)
+        : [...prev, facility]
+    );
+  };
+
+  const selectRoomType = (roomType: string) => {
+    setSelectedRoomType(roomType);
+  };
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -139,8 +104,8 @@ export default function VenueAccommodationDashboard() {
     }
   };
 
-  const handleSubmitPackage = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitPackage = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     
     const packageData: Package = {
       id: Date.now().toString(),
@@ -150,10 +115,9 @@ export default function VenueAccommodationDashboard() {
       facilities: newPackage.facilities.split(',').map(f => f.trim()),
       photos: newPackage.photos.map(f => URL.createObjectURL(f)),
       createdAt: new Date(),
-      blockedDates: [],
-      foodBeveragePrice: newPackage.foodBeveragePrice ? parseFloat(newPackage.foodBeveragePrice) : undefined,
-      decorationPrice: newPackage.decorationPrice ? parseFloat(newPackage.decorationPrice) : undefined,
-      guestServiceCharge: newPackage.guestServiceCharge ? parseFloat(newPackage.guestServiceCharge) : undefined,
+      stock: newPackage.stock ? parseInt(newPackage.stock) : undefined,
+      discount: newPackage.discount || undefined,
+      discountType: newPackage.discountType || undefined,
     };
 
     const updatedPackages = [...packages, packageData];
@@ -164,710 +128,450 @@ export default function VenueAccommodationDashboard() {
       title: '',
       pricePerDay: '',
       facilities: '',
-      foodBeveragePrice: '',
-      decorationPrice: '',
-      guestServiceCharge: '',
+      stock: '',
+      discount: '',
+      discountType: '',
       photos: [],
     });
-    setShowNewPackageForm(false);
-  };
-
-  const handleDeletePackage = (id: string) => {
-    if (confirm('Are you sure you want to delete this package?')) {
-      const updatedPackages = packages.filter(pkg => pkg.id !== id);
-      setPackages(updatedPackages);
-      localStorage.setItem('venuePackages', JSON.stringify(updatedPackages));
-    }
-  };
-
-  const getCategoryPackages = () => {
-    return packages.filter(pkg => pkg.category === activeCategory);
-  };
-
-  const getFilteredAppointments = () => {
-    return appointments.filter(apt => apt.status === appointmentFilter);
-  };
-
-  const handleAppointmentAction = (action: 'accept' | 'reject' | 'reschedule') => {
-    alert(`Appointment ${action}ed successfully!`);
-    setSelectedAppointment(null);
-  };
-
-  const handleProfileUpload = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('Profile details uploaded successfully!');
-    setShowUploadModal(false);
   };
 
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#f8f5ff'}}>
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="text-3xl transition-colors hover:opacity-70"
-              style={{color: '#755A7B'}}
-              title="Upload Profile"
-            >
-              <FaUserCircle />
-            </button>
-            <img src="/logo.png" alt="Logo" className="h-12 w-12" />
-            <div>
-              <h1 className="text-3xl font-bold" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>Cinderella Hotel</h1>
-              <p className="text-sm" style={{color: '#755A7B'}}>Venue & Accommodation</p>
+    <div className="flex min-h-screen flex-col md:flex-row" style={{backgroundColor: '#f5f5f7'}}>
+      {/* Sidebar Navigation */}
+      <aside className="w-full md:w-64 bg-white shadow-lg flex flex-col">
+        <div className="p-6 border-b">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{backgroundColor: '#755A7B'}}>
+              C
             </div>
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="ml-4 px-4 py-2 text-white rounded-md transition-colors hover:opacity-90 flex items-center gap-2"
+            <div>
+              <h2 className="font-bold text-gray-800">Cinderella Hotel</h2>
+              <p className="text-xs text-gray-500">venue and accommodation</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 p-4">
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-gray-400 mb-2 px-3">Main Menu</p>
+            <button 
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors text-gray-600 hover:bg-gray-100"
+            >
+              <FaChartBar /> Overview
+            </button>
+            <button 
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors"
+              style={{backgroundColor: '#755A7B', color: 'white'}}
+            >
+              <FaPlus /> Post Package
+            </button>
+            <button 
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors text-gray-600 hover:bg-gray-100"
+            >
+              <FaFileInvoice /> Posted Packages
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-gray-400 mb-2 px-3">Appointment</p>
+            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-gray-600 hover:bg-gray-100">
+              <FaCalendarAlt /> Place a Booking
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-gray-600 hover:bg-gray-100">
+              <FaEye /> Accept Booking
+            </button>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-gray-400 mb-2 px-3">General</p>
+            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-gray-600 hover:bg-gray-100">
+              <FaBell /> Notifications
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-gray-600 hover:bg-gray-100">
+              <FaHeart /> Feedback
+            </button>
+            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-gray-600 hover:bg-gray-100">
+              <FaCog /> Setting
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-white transition-all"
               style={{backgroundColor: '#755A7B'}}
             >
-              <FaUpload /> Upload
+              <FaMoon /> Logout
             </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 text-white rounded-md transition-colors hover:opacity-90"
-            style={{backgroundColor: '#755A7B'}}
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+        </nav>
+      </aside>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Category Selection Buttons - Line style */}
-        <div className="mb-8">
-          <div className="flex gap-6 justify-center items-center">
-            <button
-              className="px-8 py-3 font-medium transition-all border-b-4"
-              style={{
-                borderColor: '#755A7B',
-                color: '#755A7B',
-                fontWeight: 'bold',
-                background: 'linear-gradient(to bottom, transparent, rgba(117, 90, 123, 0.05))'
-              }}
-            >
-              Hotel Rooms
-            </button>
-            <button
-              onClick={() => router.push('/dashboard/banquet-halls')}
-              className="px-8 py-3 font-medium transition-all border-b-4"
-              style={{
-                borderColor: 'transparent',
-                color: '#999',
-                fontWeight: 'normal',
-                background: 'transparent'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = '#A495A8'}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
-            >
-              Banquet Halls
-            </button>
-            <button
-              onClick={() => router.push('/dashboard/outdoor-venues')}
-              className="px-8 py-3 font-medium transition-all border-b-4"
-              style={{
-                borderColor: 'transparent',
-                color: '#999',
-                fontWeight: 'normal',
-                background: 'transparent'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = '#A495A8'}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = 'transparent'}
-            >
-              Outdoor Venues
-            </button>
-          </div>
-        </div>
-
-        {/* Banner Section */}
-        <div 
-          className="mb-8 rounded-lg overflow-hidden shadow-lg" 
-          style={{
-            backgroundImage: 'url(/roombanner.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            height: '300px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            border: '2px solid rgba(117, 90, 123, 0.2)'
-          }}
-        >
-          <h2 className="text-5xl font-bold text-white mb-3" style={{textShadow: '3px 3px 6px rgba(0,0,0,0.7)', fontFamily: 'var(--font-season)'}}>
-            Venue & Accommodation Manager Dashboard
-          </h2>
-          <p className="text-2xl text-white" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.7)', fontFamily: 'var(--font-season)'}}>
-            Manage your services here
-          </p>
-        </div>
-
-        {/* Post New Package Button */}
-        <div className="mb-6 flex justify-end">
-          <button
-            onClick={() => setShowNewPackageForm(!showNewPackageForm)}
-            className="px-8 py-3 text-white rounded-md font-medium transition-all hover:shadow-lg"
-            style={{backgroundColor: '#755A7B'}}
+      <div className="flex-1 flex flex-col">
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+          {/* Banner Section */}
+          <div 
+            className="mb-6 md:mb-8 rounded-lg overflow-hidden shadow-lg" 
+            style={{
+              backgroundImage: 'url(/roombanner.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              height: '150px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              border: '2px solid rgba(117, 90, 123, 0.2)'
+            }}
           >
-            {showNewPackageForm ? 'Cancel' : '+ Post New Package'}
-          </button>
-        </div>
+            <h2 className="text-2xl md:text-4xl font-bold text-white mb-2" style={{textShadow: '3px 3px 6px rgba(0,0,0,0.7)'}}>{getCategoryBannerText()}</h2>
+            <p className="text-sm md:text-xl text-white" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.7)'}}>Create and manage your venue packages</p>
+          </div>
 
-        {/* New Package Form */}
-        {showNewPackageForm && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-8" style={{border: '2px solid rgba(117, 90, 123, 0.2)'}}>
-            <h4 className="text-xl font-bold mb-4" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>Create New Package</h4>
-            <form onSubmit={handleSubmitPackage}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Package Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={newPackage.title}
-                    onChange={(e) => setNewPackage({...newPackage, title: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="e.g., Deluxe Suite with Ocean View"
-                  />
-                </div>
+          {/* Category Tabs */}
+          <div className="mb-6">
+            <div className="flex gap-2 md:gap-6 justify-center items-center overflow-x-auto pb-2">
+              <button
+                onClick={() => setActiveCategory('hotel-rooms')}
+                className="px-4 md:px-8 py-3 font-medium transition-all border-b-4 whitespace-nowrap"
+                style={{
+                  borderColor: activeCategory === 'hotel-rooms' ? '#755A7B' : 'transparent',
+                  color: activeCategory === 'hotel-rooms' ? '#755A7B' : '#999',
+                  fontWeight: activeCategory === 'hotel-rooms' ? 'bold' : 'normal',
+                  background: activeCategory === 'hotel-rooms' ? 'linear-gradient(to bottom, transparent, rgba(117, 90, 123, 0.05))' : 'transparent'
+                }}
+              >
+                Hotel Rooms
+              </button>
+              <button
+                onClick={() => setActiveCategory('banquet-halls')}
+                className="px-4 md:px-8 py-3 font-medium transition-all border-b-4 whitespace-nowrap"
+                style={{
+                  borderColor: activeCategory === 'banquet-halls' ? '#755A7B' : 'transparent',
+                  color: activeCategory === 'banquet-halls' ? '#755A7B' : '#999',
+                  fontWeight: activeCategory === 'banquet-halls' ? 'bold' : 'normal',
+                  background: activeCategory === 'banquet-halls' ? 'linear-gradient(to bottom, transparent, rgba(117, 90, 123, 0.05))' : 'transparent'
+                }}
+              >
+                Banquet Hall
+              </button>
+              <button
+                onClick={() => setActiveCategory('outdoor-venues')}
+                className="px-4 md:px-8 py-3 font-medium transition-all border-b-4 whitespace-nowrap"
+                style={{
+                  borderColor: activeCategory === 'outdoor-venues' ? '#755A7B' : 'transparent',
+                  color: activeCategory === 'outdoor-venues' ? '#755A7B' : '#999',
+                  fontWeight: activeCategory === 'outdoor-venues' ? 'bold' : 'normal',
+                  background: activeCategory === 'outdoor-venues' ? 'linear-gradient(to bottom, transparent, rgba(117, 90, 123, 0.05))' : 'transparent'
+                }}
+              >
+                Outdoor Venue
+              </button>
+            </div>
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Price Per Day (Rs.)</label>
-                  <input
-                    type="number"
-                    required
-                    value={newPackage.pricePerDay}
-                    onChange={(e) => setNewPackage({...newPackage, pricePerDay: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="e.g., 15000"
-                  />
-                </div>
+          {/* Breadcrumb and Actions */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                <span>mainmenu</span>
+                <span>/</span>
+                <span className="font-semibold" style={{color: '#755A7B'}}>add new package</span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">Add New Package</h2>
+            </div>
+            <div className="flex gap-3">
+              <button 
+                className="px-4 md:px-6 py-2.5 border-2 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm md:text-base"
+                style={{borderColor: '#e5e7eb'}}
+              >
+                <FaFileInvoice /> Save Draft
+              </button>
+              <button 
+                onClick={() => handleSubmitPackage()}
+                className="px-4 md:px-6 py-2.5 rounded-lg font-medium text-white hover:opacity-90 transition-opacity flex items-center gap-2 text-sm md:text-base"
+                style={{backgroundColor: '#755A7B'}}
+              >
+                ✓ Add Package
+              </button>
+            </div>
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Facilities (comma-separated)</label>
-                  <textarea
-                    required
-                    value={newPackage.facilities}
-                    onChange={(e) => setNewPackage({...newPackage, facilities: e.target.value})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    rows={3}
-                    placeholder="e.g., WiFi, AC, TV, Mini Bar, Balcony"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Form Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column - Package Information */}
+            <div className="lg:col-span-8">
+              <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Package Information</h3>
+                
+                <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Food & Beverage Price (Rs.)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Name of Package</label>
                     <input
-                      type="number"
-                      value={newPackage.foodBeveragePrice}
-                      onChange={(e) => setNewPackage({...newPackage, foodBeveragePrice: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="e.g., 5000"
+                      type="text"
+                      required
+                      value={newPackage.title}
+                      onChange={(e) => setNewPackage({...newPackage, title: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50"
+                      placeholder="Deluxe Wedding Package"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Decoration Price (Rs.)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description of Package</label>
+                    <textarea
+                      required
+                      value={newPackage.facilities}
+                      onChange={(e) => setNewPackage({...newPackage, facilities: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50"
+                      rows={5}
+                      placeholder="Luxurious wedding package with premium amenities. Includes spacious ballroom, elegant decorations, catering services, and dedicated event coordinator. Perfect for weddings, receptions, and special celebrations."
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Facilities</label>
+                      <p className="text-xs text-gray-500 mb-2">Select Available Facilities</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {['WiFi', 'AC', 'Parking', 'Catering'].map((facility) => (
+                          <button
+                            key={facility}
+                            type="button"
+                            onClick={() => toggleFacility(facility)}
+                            className="px-4 py-2 rounded-lg font-medium transition-all text-sm"
+                            style={{
+                              backgroundColor: selectedFacilities.includes(facility) ? '#755A7B' : '#f3f4f6',
+                              color: selectedFacilities.includes(facility) ? 'white' : '#6b7280'
+                            }}
+                          >
+                            {facility}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Room Type</label>
+                      <p className="text-xs text-gray-500 mb-2">Select Room Type</p>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {[
+                          { value: 'single', label: 'Single Room', desc: 'For one person, usually one bed', icon: FaHotel },
+                          { value: 'double', label: 'Double Room', desc: 'For two people, one double/queen bed', icon: FaHotel },
+                          { value: 'twin', label: 'Twin Room', desc: 'Two single beds', icon: FaHotel },
+                          { value: 'triple', label: 'Triple Room', desc: 'For three people, often one double + one single', icon: FaHotel },
+                          { value: 'quadruple', label: 'Quadruple Room', desc: 'For four, often two double beds', icon: FaHotel },
+                          { value: 'king-queen', label: 'King/Queen Room', desc: 'Defined by bed size (King or Queen)', icon: FaHotel }
+                        ].map((room) => (
+                          <button
+                            key={room.value}
+                            type="button"
+                            onClick={() => selectRoomType(room.value)}
+                            className="w-full text-left px-3 py-2 rounded-lg transition-all"
+                            style={{
+                              backgroundColor: selectedRoomType === room.value ? '#755A7B' : '#f3f4f6',
+                              color: selectedRoomType === room.value ? 'white' : '#6b7280'
+                            }}
+                          >
+                            <div className="flex items-start gap-2">
+                              <room.icon className="mt-1 shrink-0" />
+                              <div>
+                                <div className="text-sm font-medium">{room.label}</div>
+                                <div className="text-xs opacity-80">{room.desc}</div>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pricing of Package */}
+              <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Pricing of Package</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Package Price</label>
                     <input
                       type="number"
-                      value={newPackage.decorationPrice}
-                      onChange={(e) => setNewPackage({...newPackage, decorationPrice: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="e.g., 3000"
+                      required
+                      value={newPackage.pricePerDay}
+                      onChange={(e) => setNewPackage({...newPackage, pricePerDay: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50"
+                      placeholder="Rs. 125,000"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Guest Service Charge (Rs.)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Discount</label>
                     <input
-                      type="number"
-                      value={newPackage.guestServiceCharge}
-                      onChange={(e) => setNewPackage({...newPackage, guestServiceCharge: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="e.g., 1000"
+                      type="text"
+                      value={newPackage.discount}
+                      onChange={(e) => setNewPackage({...newPackage, discount: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50"
+                      placeholder="10%"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Upload Photos</label>
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Discount Type</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={newPackage.discountType}
+                        onChange={(e) => setNewPackage({...newPackage, discountType: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50"
+                        placeholder="Early Bird Discount"
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gray-800"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Upload Images & Category */}
+            <div className="lg:col-span-4">
+              <div className="bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Upload Img</h3>
+                
+                <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 md:p-6 mb-4">
+                  <div className="aspect-square bg-gray-50 rounded-lg mb-4 overflow-hidden">
+                    {newPackage.photos.length > 0 ? (
+                      <img 
+                        src={URL.createObjectURL(newPackage.photos[0])} 
+                        alt="Main" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-24 md:w-32 h-24 md:h-32 bg-purple-100 rounded-lg"></div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    {[0, 1, 2].map((idx) => (
+                      <div key={idx} className="aspect-square bg-purple-100 rounded-lg overflow-hidden">
+                        {newPackage.photos[idx + 1] && (
+                          <img 
+                            src={URL.createObjectURL(newPackage.photos[idx + 1])} 
+                            alt={`Thumbnail ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('photo-upload')?.click()}
+                      className="aspect-square bg-purple-100 rounded-lg flex items-center justify-center text-2xl"
+                      style={{color: '#755A7B'}}
+                    >
+                      +
+                    </button>
+                  </div>
+                  
                   <input
+                    id="photo-upload"
                     type="file"
                     multiple
                     accept="image/*"
                     onChange={handlePhotoChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                    className="hidden"
                   />
-                  <p className="text-sm text-gray-500 mt-1">You can select multiple photos</p>
                 </div>
+              </div>
 
-                <div className="flex gap-4">
-                  <button
-                    type="submit"
-                    className="px-6 py-3 text-white rounded-md font-medium transition-colors hover:opacity-90"
-                    style={{backgroundColor: '#755A7B'}}
-                  >
-                    Publish Package
-                  </button>
+              <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Category</h3>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Package Category</label>
+                  <div className="relative mb-4">
+                    <select
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50 appearance-none"
+                      defaultValue="hotel-room"
+                    >
+                      <option value="banquet-hall">Banquet Hall</option>
+                      <option value="hotel-room">Hotel Room</option>
+                      <option value="outdoor-venue">Outdoor Venue</option>
+                      <option value="full-package">Full Wedding Package</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-gray-800"></div>
+                  </div>
+                  
                   <button
                     type="button"
-                    onClick={() => setShowNewPackageForm(false)}
-                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-md font-medium transition-colors hover:bg-gray-300"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Packages List */}
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8" style={{border: '2px solid rgba(117, 90, 123, 0.2)'}}>
-          <h3 className="text-2xl font-bold mb-6" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>Posted Available Packages</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {getCategoryPackages().length === 0 ? (
-              /* Static Demo Package Card */
-              <div className="bg-white rounded-lg shadow-xl overflow-hidden transform transition-all hover:scale-105" style={{border: '2px solid rgba(117, 90, 123, 0.2)'}}>
-                <div className="relative h-64">
-                  <img
-                    src="/room.jpg"
-                    alt="Wedding Package"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                  <div className="absolute top-4 right-4 bg-white px-4 py-2 rounded-full shadow-lg">
-                    <p className="text-sm font-semibold" style={{color: '#755A7B'}}>FULL PACKAGE</p>
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <h4 className="text-2xl font-bold mb-4 text-center" style={{color: '#755A7B', fontFamily: 'var(--font-season)'}}>
-                    Get 20% Discount
-                  </h4>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-2">Package Title</label>
-                      <p className="text-lg font-medium text-gray-800">Luxury Room Package</p>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-2">Price Per Day (Rs.)</label>
-                      <div className="flex items-baseline">
-                        <span className="text-3xl font-bold" style={{color: '#755A7B'}}>Rs. 25,000</span>
-                        <span className="text-lg text-gray-400 line-through ml-2">Rs. 31,250</span>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-2">Facilities</label>
-                      <div className="flex flex-wrap gap-2">
-                        {['AC', 'WiFi', 'Parking', 'Catering', 'Attached Bathrooms'].map((facility) => (
-                          <span
-                            key={facility}
-                            className="px-3 py-1 text-sm rounded-full"
-                            style={{backgroundColor: '#D2C8D3', color: '#755A7B'}}
-                          >
-                            {facility}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-gray-500 italic">
-                      This package is for the couples who want guidance in planning their wedding from the beginning to the end.
-                    </p>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-4 border-t">
-                      <button 
-                        onClick={() => setShowCalendar('demo')}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-md transition-all hover:shadow-md"
-                        style={{backgroundColor: '#E5D4CC', color: '#755A7B'}}
-                      >
-                        <FaCalendarAlt /> Calendar
-                      </button>
-                      <button className="flex-1 flex items-center justify-center gap-2 py-2 text-white rounded-md transition-all hover:opacity-90" style={{backgroundColor: '#755A7B'}}>
-                        <FaEdit /> Edit
-                      </button>
-                      <button className="flex-1 flex items-center justify-center gap-2 py-2 text-white rounded-md transition-all hover:opacity-90" style={{backgroundColor: '#d9534f'}}>
-                        <FaTrash /> Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              getCategoryPackages().map((pkg) => (
-                <div key={pkg.id} className="bg-white rounded-lg shadow-lg overflow-hidden transform transition-all hover:scale-105" style={{border: '2px solid rgba(117, 90, 123, 0.2)'}}>
-                  {pkg.photos.length > 0 && (
-                    <div className="h-48 bg-gray-200">
-                      <img
-                        src={pkg.photos[0]}
-                        alt={pkg.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h4 className="text-lg font-bold text-gray-900 mb-2">{pkg.title}</h4>
-                    <p className="text-2xl font-bold mb-4" style={{color: '#755A7B'}}>
-                      Rs. {pkg.pricePerDay.toLocaleString()}/day
-                    </p>
-                    
-                    {/* Additional Pricing */}
-                    {(pkg.foodBeveragePrice || pkg.decorationPrice || pkg.guestServiceCharge) && (
-                      <div className="mb-4 p-3 bg-purple-50 rounded-lg">
-                        <h5 className="text-sm font-semibold text-gray-700 mb-2">Additional Services:</h5>
-                        {pkg.foodBeveragePrice && (
-                          <p className="text-sm text-gray-600">• Food & Beverage: Rs. {pkg.foodBeveragePrice.toLocaleString()}</p>
-                        )}
-                        {pkg.decorationPrice && (
-                          <p className="text-sm text-gray-600">• Decoration: Rs. {pkg.decorationPrice.toLocaleString()}</p>
-                        )}
-                        {pkg.guestServiceCharge && (
-                          <p className="text-sm text-gray-600">• Guest Service: Rs. {pkg.guestServiceCharge.toLocaleString()}</p>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="mb-4">
-                      <h5 className="text-sm font-semibold text-gray-700 mb-2">Facilities:</h5>
-                      <div className="flex flex-wrap gap-2">
-                        {pkg.facilities.map((facility, index) => (
-                          <span
-                            key={index}
-                            className="px-3 py-1 text-sm rounded-full"
-                            style={{backgroundColor: '#D2C8D3', color: '#755A7B'}}
-                          >
-                            {facility}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-500 mb-4">
-                      Posted: {new Date(pkg.createdAt).toLocaleDateString()}
-                    </p>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-4 border-t">
-                      <button 
-                        onClick={() => setShowCalendar(pkg.id)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 rounded-md transition-all hover:shadow-md"
-                        style={{backgroundColor: '#E5D4CC', color: '#755A7B'}}
-                      >
-                        <FaCalendarAlt /> Calendar
-                      </button>
-                      <button className="flex-1 flex items-center justify-center gap-2 py-2 text-white rounded-md transition-all hover:opacity-90" style={{backgroundColor: '#755A7B'}}>
-                        <FaEdit /> Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDeletePackage(pkg.id)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2 text-white rounded-md transition-all hover:opacity-90" 
-                        style={{backgroundColor: '#d9534f'}}
-                      >
-                        <FaTrash /> Delete
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Booking Calendar Modal */}
-        {showCalendar && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowCalendar(null)}>
-            <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-2xl font-bold mb-4" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>Booking Availability Calendar</h3>
-              <p className="text-gray-600 mb-4">Select dates to block/unblock for bookings</p>
-              <div className="bg-purple-50 p-6 rounded-lg text-center">
-                <FaCalendarAlt className="text-6xl mx-auto mb-4" style={{color: '#755A7B'}} />
-                <p className="text-gray-600">Calendar component will be displayed here</p>
-                <p className="text-sm text-gray-500 mt-2">You can select dates to mark as unavailable</p>
-              </div>
-              <div className="flex justify-end gap-3 mt-6">
-                <button 
-                  onClick={() => setShowCalendar(null)}
-                  className="px-6 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
-                >
-                  Close
-                </button>
-                <button 
-                  className="px-6 py-2 text-white rounded-md hover:opacity-90"
-                  style={{backgroundColor: '#755A7B'}}
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Appointment Request Section */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8 overflow-hidden" style={{border: '2px solid rgba(117, 90, 123, 0.2)'}}>
-          <div className="text-center mb-6">
-            <h3 className="text-3xl font-bold mb-2" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>
-              Requested Appointments to Discussion
-            </h3>
-            <p className="text-gray-600">Manage customer appointment requests</p>
-          </div>
-          
-          {/* Status Filter Tabs */}
-          <div className="flex justify-center gap-4 mb-6 flex-wrap">
-            {(['new', 'accepted', 'rejected', 'rescheduled'] as AppointmentStatus[]).map((status) => (
-              <button
-                key={status}
-                onClick={() => setAppointmentFilter(status)}
-                className="px-6 py-2 rounded-full font-medium transition-all capitalize"
-                style={{
-                  backgroundColor: appointmentFilter === status ? '#755A7B' : '#f3f4f6',
-                  color: appointmentFilter === status ? 'white' : '#755A7B',
-                  border: `2px solid ${appointmentFilter === status ? '#755A7B' : '#e5e7eb'}`
-                }}
-              >
-                {status} ({appointments.filter(a => a.status === status).length})
-              </button>
-            ))}
-          </div>
-
-          {/* Appointments List */}
-          <div className="space-y-4">
-            {getFilteredAppointments().map((appointment) => (
-              <div 
-                key={appointment.id}
-                className="bg-purple-50 rounded-lg p-5 border-2 transition-all hover:shadow-md"
-                style={{borderColor: '#D2C8D3'}}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold" style={{backgroundColor: '#755A7B'}}>
-                      {appointment.customerName.split(' ')[0].charAt(0)}{appointment.customerName.split(' ')[1]?.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900">{appointment.customerName}</h4>
-                      <p className="text-sm text-gray-600">{appointment.requestedDate} at {appointment.requestedTime}</p>
-                      <p className="text-sm" style={{color: '#755A7B'}}>{appointment.venueName}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setSelectedAppointment(appointment)}
-                    className="flex items-center gap-2 px-4 py-2 text-white rounded-md transition-all hover:opacity-90"
+                    className="w-full py-3 rounded-lg font-medium text-white hover:opacity-90 transition-opacity"
                     style={{backgroundColor: '#755A7B'}}
                   >
-                    <FaEye /> See More
+                    Add Category
                   </button>
                 </div>
               </div>
-            ))}
-            
-            {getFilteredAppointments().length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                No {appointmentFilter} appointments found
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Detailed Appointment Modal */}
-        {selectedAppointment && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedAppointment(null)}>
-            <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-3xl font-bold mb-6 text-center" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>
-                Appointment Details
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl" style={{backgroundColor: '#755A7B'}}>
-                    {selectedAppointment.customerName.split(' ')[0].charAt(0)}{selectedAppointment.customerName.split(' ')[1]?.charAt(0)}
-                  </div>
-                  <div>
-                    <h4 className="text-xl font-bold text-gray-900">{selectedAppointment.customerName}</h4>
-                    <p className="text-sm text-gray-600">Wedding Date: {selectedAppointment.weddingDate}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 bg-purple-50 p-4 rounded-lg">
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Contact Email</p>
-                    <p className="text-gray-900">{selectedAppointment.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Phone</p>
-                    <p className="text-gray-900">{selectedAppointment.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Requested Date</p>
-                    <p className="text-gray-900">{selectedAppointment.requestedDate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-600">Requested Time</p>
-                    <p className="text-gray-900">{selectedAppointment.requestedTime}</p>
-                  </div>
-                </div>
-
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-sm font-semibold text-gray-600 mb-2">Interested Package</p>
-                  <p className="text-gray-900">{selectedAppointment.packageInterest}</p>
-                  <p className="text-sm text-gray-600 mt-2">Expected Guests: {selectedAppointment.expectedGuests}</p>
-                </div>
-
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-sm font-semibold text-gray-600 mb-2">Message</p>
-                  <p className="text-gray-900 italic">&quot;{selectedAppointment.message}&quot;</p>
-                </div>
-
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <p className="text-sm font-semibold text-gray-600 mb-2">Venue</p>
-                  <p className="text-gray-900">{selectedAppointment.venueName}</p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 mt-8">
-                <button 
-                  onClick={() => handleAppointmentAction('accept')}
-                  className="flex-1 py-3 text-white font-semibold rounded-lg shadow-md transition-all hover:shadow-lg"
-                  style={{backgroundColor: '#28a745'}}
-                >
-                  Accept
-                </button>
-                <button 
-                  onClick={() => handleAppointmentAction('reschedule')}
-                  className="flex-1 py-3 text-white font-semibold rounded-lg shadow-md transition-all hover:shadow-lg"
-                  style={{backgroundColor: '#755A7B'}}
-                >
-                  Reschedule
-                </button>
-                <button 
-                  onClick={() => handleAppointmentAction('reject')}
-                  className="flex-1 py-3 text-white font-semibold rounded-lg shadow-md transition-all hover:shadow-lg"
-                  style={{backgroundColor: '#d9534f'}}
-                >
-                  Reject
-                </button>
-              </div>
-              
-              <button
-                onClick={() => setSelectedAppointment(null)}
-                className="w-full mt-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
-              >
-                Close
-              </button>
             </div>
           </div>
-        )}
+        </main>
 
-        {/* Upload Profile Modal */}
-        {showUploadModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{zIndex: 1000}}>
-            <div className="bg-white rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <h3 className="text-2xl font-bold mb-6" style={{fontFamily: 'var(--font-season)', color: '#755A7B'}}>
-                Upload Profile Details
-              </h3>
-              <form onSubmit={handleProfileUpload}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={profileData.businessName}
-                      onChange={(e) => setProfileData({...profileData, businessName: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="e.g., Cinderella Hotel"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                    <textarea
-                      required
-                      rows={4}
-                      value={profileData.description}
-                      onChange={(e) => setProfileData({...profileData, description: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="Brief description of your business..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                    <input
-                      type="email"
-                      required
-                      value={profileData.email}
-                      onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="contact@cinderellahotel.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
-                    <input
-                      type="tel"
-                      required
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="+94 77 123 4567"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
-                    <input
-                      type="text"
-                      required
-                      value={profileData.address}
-                      onChange={(e) => setProfileData({...profileData, address: e.target.value})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      placeholder="123 Main Street, Colombo"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Business Logo</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setProfileData({...profileData, logo: e.target.files ? e.target.files[0] : null})}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-
-                  <div className="flex gap-4 mt-6">
-                    <button
-                      type="submit"
-                      className="flex-1 px-6 py-3 text-white rounded-md font-medium transition-colors hover:opacity-90"
-                      style={{backgroundColor: '#755A7B'}}
-                    >
-                      Upload Profile
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowUploadModal(false)}
-                      className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-md font-medium transition-colors hover:bg-gray-300"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+        {/* Footer */}
+        <footer className="bg-white border-t mt-8" style={{backgroundColor: '#755A7B'}}>
+          <div className="px-4 md:px-8 py-12">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+              {/* About Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <img src="/logo.png" alt="Wedora Logo" className="h-10 w-10" />
+                  <h3 className="text-xl font-bold text-white" style={{fontFamily: 'var(--font-season)'}}>Wedora</h3>
                 </div>
-              </form>
+                <p className="text-purple-100 text-sm">
+                  Your trusted partner in creating unforgettable wedding experiences.
+                </p>
+              </div>
+
+              {/* Quick Links */}
+              <div>
+                <h4 className="text-white font-bold mb-4">Quick Links</h4>
+                <ul className="space-y-2">
+                  <li><a href="/" className="text-purple-100 hover:text-white text-sm transition-colors">Home</a></li>
+                  <li><a href="/about" className="text-purple-100 hover:text-white text-sm transition-colors">About Us</a></li>
+                  <li><a href="/contact" className="text-purple-100 hover:text-white text-sm transition-colors">Contact</a></li>
+                  <li><a href="/signup" className="text-purple-100 hover:text-white text-sm transition-colors">Sign Up</a></li>
+                </ul>
+              </div>
+
+              {/* Services */}
+              <div>
+                <h4 className="text-white font-bold mb-4">Services</h4>
+                <ul className="space-y-2">
+                  <li><span className="text-purple-100 text-sm">Venue & Accommodation</span></li>
+                  <li><span className="text-purple-100 text-sm">Photography</span></li>
+                  <li><span className="text-purple-100 text-sm">Fashion & Beauty</span></li>
+                  <li><span className="text-purple-100 text-sm">Entertainment</span></li>
+                </ul>
+              </div>
+
+              {/* Contact Info */}
+              <div>
+                <h4 className="text-white font-bold mb-4">Contact Us</h4>
+                <ul className="space-y-2">
+                  <li className="text-purple-100 text-sm">Email: info@wedora.com</li>
+                  <li className="text-purple-100 text-sm">Phone: +94 77 123 4567</li>
+                  <li className="text-purple-100 text-sm">Address: Colombo, Sri Lanka</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-purple-400 pt-8">
+              <div className="text-center text-purple-100">
+                <p>&copy; 2026 Wedora. All rights reserved.</p>
+              </div>
             </div>
           </div>
-        )}
-      </main>
+        </footer>
+      </div>
     </div>
   );
 }
