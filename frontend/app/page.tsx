@@ -1,7 +1,13 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { FaShoppingCart, FaCalculator, FaChevronDown } from "react-icons/fa";
 
 export default function Home() {
+  const [showServicesDropdown, setShowServicesDropdown] = useState(false);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section with Background Image */}
@@ -32,6 +38,86 @@ export default function Home() {
               <h1 className="text-2xl font-bold text-white" style={{fontFamily: 'var(--font-season)'}}>Wedora</h1>
             </div>
             <nav className="flex items-center gap-6">
+              {/* Services Dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setShowServicesDropdown(true)}
+                onMouseLeave={() => setShowServicesDropdown(false)}
+              >
+                <button
+                  className="px-4 py-2 font-medium text-white transition-colors hover:opacity-80 flex items-center gap-2"
+                >
+                  Services <FaChevronDown className="text-sm" />
+                </button>
+                
+                {showServicesDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 z-50">
+                    <Link
+                      href="/services/venue-accommodation"
+                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      style={{color: '#755A7B'}}
+                    >
+                      Venue & Accommodation
+                    </Link>
+                    <Link
+                      href="/services/photography-videography"
+                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      style={{color: '#755A7B'}}
+                    >
+                      Photography & Videography
+                    </Link>
+                    <Link
+                      href="/services/fashion-beauty"
+                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      style={{color: '#755A7B'}}
+                    >
+                      Fashion & Beauty
+                    </Link>
+                    <Link
+                      href="/services/entertainment"
+                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      style={{color: '#755A7B'}}
+                    >
+                      Entertainment
+                    </Link>
+                    <Link
+                      href="/services/transportation"
+                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      style={{color: '#755A7B'}}
+                    >
+                      Transportation
+                    </Link>
+                    <Link
+                      href="/services/ceremonial"
+                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      style={{color: '#755A7B'}}
+                    >
+                      Ceremonial Services
+                    </Link>
+                    <Link
+                      href="/services/cake-decoration"
+                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      style={{color: '#755A7B'}}
+                    >
+                      Cake Decoration
+                    </Link>
+                    <Link
+                      href="/services/gifting-souvenirs"
+                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      style={{color: '#755A7B'}}
+                    >
+                      Gifting & Souvenirs
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              <Link
+                href="/budget-calculator"
+                className="px-4 py-2 font-medium text-white transition-colors hover:opacity-80 flex items-center gap-2"
+              >
+                <FaCalculator /> Budget Calculator
+              </Link>
               <Link
                 href="/about"
                 className="px-4 py-2 font-medium text-white transition-colors hover:opacity-80"
@@ -43,6 +129,16 @@ export default function Home() {
                 className="px-4 py-2 font-medium text-white transition-colors hover:opacity-80"
               >
                 Contact
+              </Link>
+              <Link
+                href="/cart"
+                className="px-3 py-2 font-medium text-white transition-colors hover:opacity-80 relative"
+                title="Cart"
+              >
+                <FaShoppingCart className="text-xl" />
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  0
+                </span>
               </Link>
               <Link
                 href="/login"
