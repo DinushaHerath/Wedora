@@ -166,15 +166,24 @@ export default function VenueAccommodationDashboard() {
               <FaPlus /> Post Package
             </button>
             <button 
+              onClick={() => router.push('/dashboard/venue-accommodation/posted-packages')}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors text-gray-600 hover:bg-gray-100"
             >
               <FaFileInvoice /> Posted Packages
+            </button>
+            <button 
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-colors text-gray-600 hover:bg-gray-100"
+            >
+              <FaEdit /> Draft Package
             </button>
           </div>
 
           <div className="mb-6">
             <p className="text-xs font-semibold text-gray-400 mb-2 px-3">Appointment</p>
-            <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-gray-600 hover:bg-gray-100">
+            <button 
+              onClick={() => router.push('/dashboard/venue-accommodation/place-booking')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-gray-600 hover:bg-gray-100"
+            >
               <FaCalendarAlt /> Place a Booking
             </button>
             <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-gray-600 hover:bg-gray-100">

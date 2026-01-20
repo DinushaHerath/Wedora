@@ -31,7 +31,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-red bg-opacity-40" style={{ zIndex: 1 }}></div>
         
         {/* Header */}
-        <header className="relative bg-transparent" style={{ zIndex: 10 }}>
+        <header className="relative bg-transparent" style={{ zIndex: 100 }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <div className="flex items-center gap-3">
               <img src="/logo.png" alt="Wedora Logo" className="h-12 w-12" />
@@ -39,76 +39,89 @@ export default function Home() {
             </div>
             <nav className="flex items-center gap-6">
               {/* Services Dropdown */}
-              <div 
-                className="relative"
-                onMouseEnter={() => setShowServicesDropdown(true)}
-                onMouseLeave={() => setShowServicesDropdown(false)}
-              >
+              <div className="relative">
                 <button
+                  onClick={() => setShowServicesDropdown(!showServicesDropdown)}
                   className="px-4 py-2 font-medium text-white transition-colors hover:opacity-80 flex items-center gap-2"
                 >
                   Services <FaChevronDown className="text-sm" />
                 </button>
                 
                 {showServicesDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 z-50">
+                  <>
+                    {/* Invisible overlay to close dropdown when clicking outside */}
+                    <div 
+                      className="fixed inset-0" 
+                      style={{ zIndex: 999 }}
+                      onClick={() => setShowServicesDropdown(false)}
+                    />
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2" style={{ zIndex: 1000 }}>
                     <Link
                       href="/services/venue-accommodation"
-                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowServicesDropdown(false)}
+                      className="block px-4 py-2 hover:bg-purple-50 transition-colors"
                       style={{color: '#755A7B'}}
                     >
                       Venue & Accommodation
                     </Link>
                     <Link
                       href="/services/photography-videography"
-                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowServicesDropdown(false)}
+                      className="block px-4 py-2 hover:bg-purple-50 transition-colors"
                       style={{color: '#755A7B'}}
                     >
                       Photography & Videography
                     </Link>
                     <Link
                       href="/services/fashion-beauty"
-                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowServicesDropdown(false)}
+                      className="block px-4 py-2 hover:bg-purple-50 transition-colors"
                       style={{color: '#755A7B'}}
                     >
                       Fashion & Beauty
                     </Link>
                     <Link
                       href="/services/entertainment"
-                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowServicesDropdown(false)}
+                      className="block px-4 py-2 hover:bg-purple-50 transition-colors"
                       style={{color: '#755A7B'}}
                     >
                       Entertainment
                     </Link>
                     <Link
                       href="/services/transportation"
-                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowServicesDropdown(false)}
+                      className="block px-4 py-2 hover:bg-purple-50 transition-colors"
                       style={{color: '#755A7B'}}
                     >
                       Transportation
                     </Link>
                     <Link
                       href="/services/ceremonial"
-                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowServicesDropdown(false)}
+                      className="block px-4 py-2 hover:bg-purple-50 transition-colors"
                       style={{color: '#755A7B'}}
                     >
                       Ceremonial Services
                     </Link>
                     <Link
                       href="/services/cake-decoration"
-                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowServicesDropdown(false)}
+                      className="block px-4 py-2 hover:bg-purple-50 transition-colors"
                       style={{color: '#755A7B'}}
                     >
                       Cake Decoration
                     </Link>
                     <Link
                       href="/services/gifting-souvenirs"
-                      className="block px-4 py-2 text-gray-800 hover:bg-purple-50 transition-colors"
+                      onClick={() => setShowServicesDropdown(false)}
+                      className="block px-4 py-2 hover:bg-purple-50 transition-colors"
                       style={{color: '#755A7B'}}
                     >
                       Gifting & Souvenirs
                     </Link>
                   </div>
+                  </>
                 )}
               </div>
 
@@ -274,7 +287,7 @@ export default function Home() {
           <div 
             className="relative rounded-2xl shadow-2xl overflow-hidden"
             style={{
-              backgroundImage: 'url(/15.jpg)',
+              backgroundImage: 'url(/15.png)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               minHeight: '400px'
